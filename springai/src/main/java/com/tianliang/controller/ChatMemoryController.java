@@ -30,7 +30,6 @@ public class ChatMemoryController implements InitializingBean {
     @Autowired
     private ChatModel dashScopeChatModel;
 
-    @Autowired
     private ChatClient chatClient;
 
     @GetMapping("/call")

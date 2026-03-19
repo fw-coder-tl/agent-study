@@ -20,6 +20,9 @@ public class PromptEngineerController implements InitializingBean {
 
     private ChatClient chatClient;
 
+    /**
+     * 用户提示词
+     */
     @GetMapping("/role")
     public String role(String message) {
         return chatClient.prompt(message).call().content();
@@ -41,11 +44,17 @@ public class PromptEngineerController implements InitializingBean {
                 """).user(message).call().content();
     }
 
+    /**
+     * 系统提示词
+     */
     @GetMapping("/structureOutput")
     public String structureOutput(String message){
         return chatClient.prompt("请你以json格式输出内容").system("你是一个有用的助手").user(message).call().content();
     }
 
+    /**
+     * CoT链式思维提示词
+     */
     @GetMapping("/step")
     public Flux<String> step(@RequestParam(value = "message") String message, HttpServletResponse response) {
         response.setCharacterEncoding("UTF-8");
