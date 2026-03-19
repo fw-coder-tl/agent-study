@@ -1,6 +1,7 @@
 package com.tianliang.controller;
 
 import com.alibaba.fastjson2.JSON;
+import com.tianliang.chatmemory.RedisChatMemoryStore;
 import com.tianliang.service.LangChainAiService;
 import com.tianliang.service.LangChainMemoryAiService;
 import com.tianliang.tool.TemperatureTools;
