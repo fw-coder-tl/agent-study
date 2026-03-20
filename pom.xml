@@ -19,6 +19,8 @@
     <modules>
         <module>springai</module>
         <module>langchain4j</module>
+        <module>rag</module>
+        <module>mcp/mcp-server-stdio</module>
     </modules>
 
     <properties>
