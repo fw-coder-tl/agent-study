@@ -1,0 +1,79 @@
+server:
+  port: 8888
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+spring:
+  ai:
+    openai:
+      api-key: sk-9141ea0811d24340b7f53ac2137a563b
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/
+      chat:
+        options:
+          model: qwen-plus
+          temperature: 0.7
+          maxTokens: 5000
+
+      embedding:
+        base-url: https://dashscope.aliyuncs.com/compatible-mode/
+        api-key: sk-9141ea0811d24340b7f53ac2137a563b
+        options:
+          model: text-embedding-v4
+          dimmension: 1024
+
+  datasource:
+    url: jdbc:mysql://127.0.0.1:13306/dodo?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8 # 记得改成你自己的
+    username: root # 记得改成你自己的
+    password: root123456 # 记得改成你自己的（需与 docker-compose.yml 的 MYSQL_ROOT_PASSWORD 一致）
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 60000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  # MyBatis-Plus 配置
+  mybatis-plus:
+    mapper-locations: classpath:mapper/*.xml
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+minio:
+  url: http://localhost:19000/   # 记得改成你自己的
+  accessKey: minioadmin # 记得改成你自己的
+  secretKey: minioadmin # 记得改成你自己的
+  bucketName: rag-test2
+  endpoint: http://localhost:19000/
+
+embeddings:
+  store:
+    host: localhost   # 记得改成你自己的
+    port: 15433   # 记得改成你自己的
+    database: vector_store   # 记得改成你自己的
+    user: postgres   # 记得改成你自己的
+    password: postgres   # 记得改成你自己的
+
+# Tavily 搜索引擎配置
+tavily:
+  api-key: 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  # 记得改成你自己的
+  mcp-url: https://mcp.tavily.com/mcp/
+
+grsai:
+  nanobanana:
+    api-key: sk-d4a8ca5beadd4ff3b6133ebc965885e5 # 记得改成你自己的
+
+logging:
+  level:
+    org:
+      springframework:
+        ai: INFO
+    io:
+      modelcontextprotocol:
+        client: ERROR

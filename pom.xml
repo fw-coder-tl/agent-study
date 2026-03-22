@@ -21,7 +21,8 @@
         <module>langchain4j</module>
         <module>rag</module>
         <module>mcp/mcp-server-stdio</module>
-        <module>general-agent</module>
+        <module>agent/general-agent</module>
+        <module>doudou-agent</module>
     </modules>
 
     <properties>
