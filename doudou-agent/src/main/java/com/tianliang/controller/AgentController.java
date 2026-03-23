@@ -1,8 +1,10 @@
 package com.tianliang.controller;
 
+import com.tianliang.agent.file.FileReactAgent;
 import com.tianliang.agent.websearch.WebSearchReactAgent;
 import com.tianliang.service.AgentTaskManager;
 import com.tianliang.service.AiSessionService;
+import com.tianliang.tool.FileContentService;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
+import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +27,10 @@ import reactor.core.publisher.Flux;
 
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 智能体控制器
@@ -44,8 +50,8 @@ public class AgentController implements InitializingBean {
     @Autowired
     private AgentTaskManager taskManager;
 
-//    @Autowired
-//    private FileContentService fileContentService;
+    @Autowired
+    private FileContentService fileContentService;
 
     /**
      * Tavily 搜索引擎 API Key
@@ -85,6 +91,53 @@ public class AgentController implements InitializingBean {
             log.error("处理网页搜索请求时发生错误: ", e);
             return Flux.error(e);
         }
+    }
+
+    @GetMapping(value = "/file/stream", produces = "text/event-stream;charset=UTF-8")
+    @Operation(summary = "文件问答", description = "接收用户查询并返回流式响应，基于上传的文件内容进行问答")
+    public Flux<String> fileStream(@RequestParam(required = true) String query,
+                                   @RequestParam(required = true) String conversationId,
+                                   @RequestParam(required = true) String fileId) {
+        log.info("收到文件问答请求: query={}, conversationId={}, fileId={}", query, conversationId, fileId);
+
+        if (query == null || query.trim().isEmpty()) {
+            log.warn("查询参数为空或无效");
+            return Flux.error(new IllegalArgumentException("查询参数不能为空"));
+        }
+
+        if (fileId == null || fileId.trim().isEmpty()) {
+            log.warn("文件ID参数为空");
+            return Flux.error(new IllegalArgumentException("文件ID不能为空"));
+        }
+
+        try {
+            FileReactAgent fileReactAgent = initFileReactAgent();
+            // 使用持久化记忆加载历史记录
+            ChatMemory persistentMemory = fileReactAgent.createPersistentChatMemory(conversationId, 30);
+            fileReactAgent.setChatMemory(persistentMemory);
+            return fileReactAgent.stream(conversationId, query, fileId);
+        } catch (Exception e) {
+            log.error("处理文件问答请求时发生错误: ", e);
+            return Flux.error(e);
+        }
+    }
+
+    @GetMapping("/stop")
+    @Operation(summary = "停止Agent执行", description = "停止指定会话的Agent执行，中断底层调用")
+    public Map<String, Object> stopAgent(@RequestParam String conversationId) {
+        log.info("收到停止请求: conversationId={}", conversationId);
+
+        boolean success = taskManager.stopTask(conversationId);
+
+        Map<String, Object> result = new HashMap<>();
+        if (success) {
+            result.put("success", true);
+            result.put("message", "已停止执行");
+        } else {
+            result.put("success", false);
+            result.put("message", "没有找到正在执行的任务或已停止");
+        }
+        return result;
     }
 
     @Override
@@ -136,6 +189,23 @@ public class AgentController implements InitializingBean {
                 .sessionService(sessionService)
                 .taskManager(taskManager)
                 .maxRounds(5)
+                .build();
+    }
+
+    /**
+     * 初始化文件问答 Agent
+     */
+    private FileReactAgent initFileReactAgent() {
+        log.info("初始化文件问答 Agent...");
+
+        List<ToolCallback> allTools = Arrays.asList(ToolCallbacks.from(fileContentService));
+
+        return FileReactAgent.builder()
+                .name("file react")
+                .chatModel(chatModel)
+                .tools(allTools)
+                .sessionService(sessionService)
+                .taskManager(taskManager)
                 .build();
     }
 }
