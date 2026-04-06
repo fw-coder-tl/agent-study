@@ -6,6 +6,7 @@ import com.tianliang.entity.record.AgentState;
 import com.tianliang.entity.record.RoundMode;
 import com.tianliang.entity.record.SearchResult;
 import com.tianliang.entity.record.SimpleReactResult;
+import com.tianliang.prompts.PlanExecutePrompts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -590,6 +591,9 @@ public class SimpleReactAgent {
 
         AgentState agentState = withReference ? new AgentState() : null;
 
+        // 先添加时间信息
+        messages.add(new SystemMessage(PlanExecutePrompts.getCurrentTime()));
+        // 再添加系统提示词
         messages.add(new SystemMessage(REACT_AGENT_SYSTEM_PROMPT));
         messages.add(new SystemMessage(systemPrompt));
 

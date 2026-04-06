@@ -349,6 +349,9 @@ public class PlanExecuteAgent extends BaseAgent {
         emit(sink, finished, "\n🔍 正在分析您的需求...\n", "thinking", thinkingBuffer);
 
         List<Message> messages = new ArrayList<>();
+        // 先注入时间信息
+        messages.add(new SystemMessage(PlanExecutePrompts.getCurrentTime()));
+        // 再注入提示词
         messages.add(new SystemMessage(PlanExecutePrompts.REQUIREMENT_CLARIFICATION));
         messages.addAll(state.getMessages());
 

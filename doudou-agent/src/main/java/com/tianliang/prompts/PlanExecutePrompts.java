@@ -2,6 +2,7 @@ package com.tianliang.prompts;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Plan-Execute Agent 提示词
@@ -12,10 +13,18 @@ public final class PlanExecutePrompts {
     private PlanExecutePrompts() {
     }
 
+    /**
+     * 获取当前系统时间
+     * 时间信息作为独立的上下文注入，不包含在提示词模板中
+     */
+    public static String getCurrentTime() {
+        return "当前正确的系统时间：" + LocalDateTime.now(ZoneId.of("Asia/Shanghai"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
     public static final String PLAN = """
             你是【DeepResearch 执行计划规划专家】。
                         
-            当前正确的系统时间是：%s
 
             你面对的是一个【研究型任务】，而不是一次性问答。
             你的职责是在执行任何工具调用之前，
@@ -97,7 +106,7 @@ public final class PlanExecutePrompts {
                {"id":"task-2","instruction":"调用 XXX 工具，执行<明确查询或操作>","order":1},
                {"id":"task-3","instruction":"根据 task1 和 task-2 的结果，调用 XXX 工具，执行<明确查询或操作>","order":2}
              ]
-            """.formatted(LocalDateTime.now(ZoneId.of("Asia/Shanghai")));
+            """;
     public static final String EXECUTE = """
             你是【DeepResearch 工具执行与结果整理专家】。
                         
@@ -120,10 +129,10 @@ public final class PlanExecutePrompts {
             - 不引入任何工具未提供的信息
 
             输出定位：
-            这是对工具结果的“忠实整理版记录”，
+            这是对工具结果的"忠实整理版记录"，
             不是研究结论，也不是最终报告。
             保持客观总结，不要加入你的个人评论和解释性的语句。
-            """.formatted(LocalDateTime.now(ZoneId.of("Asia/Shanghai")));
+            """;
 
 
     public static final String CRITIQUE = """
@@ -156,7 +165,7 @@ public final class PlanExecutePrompts {
                "feedback": "如果未通过，也就是passed=false的时候，仅指出最关键、最优先需要补充的研究方向"
              }
                         
-            """.formatted(LocalDateTime.now(ZoneId.of("Asia/Shanghai")));
+            """;
 
     public static final String COMPRESS = """
              你是【上下文内容压缩器】。
@@ -200,7 +209,7 @@ public final class PlanExecutePrompts {
              ## 压缩规则
              - 删除冗余对话、重复解释和思考过程
              - 保留事实、结论、判断、约束和失败原因
-             - 不得使用模糊指代（如“之前提到的”“上一步”）
+             - 不得使用模糊指代（如"之前提到的""上一步"）
              - 不得引入任何新信息、新结论或新推理
              - 不得生成计划、建议或下一步行动
              
@@ -232,7 +241,7 @@ public final class PlanExecutePrompts {
              
              【Open Issues】 
              - <尚未解决的问题或缺失信息>
-            """.formatted(LocalDateTime.now(ZoneId.of("Asia/Shanghai")));
+            """;
 
     public static final String SUMMARIZE = """
             你是【DeepResearch 结果总结专家】。
@@ -262,7 +271,7 @@ public final class PlanExecutePrompts {
             - 对于检索到的内容：详细、准确地呈现
             - 对于未检索到的内容：诚实说明"未检索到相关信息"或"基于现有信息无法判断"
             - 对于存在冲突的信息：客观呈现不同来源的说法，不做主观判断
-            """.formatted(LocalDateTime.now(ZoneId.of("Asia/Shanghai")));
+            """;
 
 
     /**
@@ -305,7 +314,7 @@ public final class PlanExecutePrompts {
             信息充足：
             【开始研究】
             用一句话说明研究方向。
-            """.formatted(LocalDateTime.now(ZoneId.of("Asia/Shanghai")));
+            """;
 
     /**
      * 研究主题生成提示词
@@ -357,5 +366,5 @@ public final class PlanExecutePrompts {
             - 避免使用 Markdown 格式标记
             - 不要添加额外的解释、前言或总结
             - 直接作为研究主题说明输出
-            """.formatted(LocalDateTime.now(ZoneId.of("Asia/Shanghai")));
+            """;
 }
