@@ -742,24 +742,23 @@ public class PlanExecuteAgent extends BaseAgent {
             for (PlanTask task : tasks) {
                 // 使用Mono包装任务执行
                 Disposable taskDisposable = Mono.fromRunnable(() -> {
+                            boolean acquired = false;
                             try {
                                 // 检查是否已被停止
                                 if (compositeDisposable.isDisposed()) {
-                                    latch.countDown();
                                     return;
                                 }
 
                                 // 获取执行许可
                                 toolSemaphore.acquire();
+                                acquired = true;
+
                                 if (task == null || task.id() == null || task.id().isEmpty()) {
-                                    latch.countDown();
                                     return;
                                 }
 
                                 // 再次检查，避免在acquire后被停止
                                 if (compositeDisposable.isDisposed()) {
-                                    toolSemaphore.release();
-                                    latch.countDown();
                                     return;
                                 }
 
@@ -821,7 +820,9 @@ public class PlanExecuteAgent extends BaseAgent {
                                 }
                             } finally {
                                 // 释放许可
-                                toolSemaphore.release();
+                                if (acquired) {
+                                    toolSemaphore.release();
+                                }
                                 latch.countDown();
                             }
                         })
